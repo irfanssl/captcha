@@ -5,7 +5,7 @@
         <li>checkout ke branch : irfanssl/features/captcha</li>
         <li>buka 2 terminal / git bash :</li>
         <li>terminal 1 digunakan untuk run : npm install , lalu npm run dev</li>
-        <li>terminal 2 digunakan untuk run : php artisan serve</li>
+        <li>terminal 2 digunakan untuk run : php artisan migrate --path=database/migrations/survey , lalu php artisan serve</li>
     </ul>
 
 <p align="center">Selamat Mencoba !!!</p>
