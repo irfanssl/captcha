@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Survey;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Survey\Survey;
+use App\Models\Survey\Captcha;
+use Carbon\Carbon;
 
 class SurveyController extends Controller
 {
@@ -37,9 +39,26 @@ class SurveyController extends Controller
      */
     public function store(Request $request)
     {
-        $survey = new Survey();
-        $survey->hasil_survey = json_encode($request->all());
-        $survey->save();
+        // dd($request);
+        $captcha = Captcha::where([
+            'captcha_file_name' => $request->file_name,
+            'captcha_value' => $request->captcha_value,
+            'digunakan_at' => null, // jika sudah terpakai , tidak boleh digunakan lagi
+            ])->first();
+
+        if($captcha){
+            $survey = new Survey();
+            $survey->hasil_survey = json_encode($request->all());
+            $survey->save();
+
+            $captcha = Captcha::find($captcha->id);
+            $captcha->digunakan_at = Carbon::now();
+            $captcha->save();
+
+            return response()->json(['captcha_valid'=> "True"], 200);
+        }else{
+            return response()->json(['captcha_valid'=> "False"], 500);
+        }
     }
 
     // /**
