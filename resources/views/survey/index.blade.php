@@ -29,7 +29,7 @@
             <label for="kecepatan" class="form-label">Seberapa cepat pelayanan / serving di restaurant X ?</label>
             <textarea class="form-control" id="kecepatan" rows="3"></textarea>
         </div>
-        <div class="mb-5">
+        <div class="mb-4">
             <div class="row">
                 <div class="col">
                     <label for="nama" class="form-label">Nama</label>
@@ -41,7 +41,22 @@
                 </div>
             </div>
         </div>
-        <div class="text-center" id="notifikasi">
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-3"></div>
+                <div class="col-6">
+                    <div class="card" id="captcha-container">
+                        <!-- <img src="{{asset('assets/texture1.jpg')}}" id="image-captcha" height="50px" class="card-img-top" alt="..."> -->
+                        <div class="card-body text-center">
+                            <input type="captcha" class="form-control mb-1" id="captcha" placeholder="masukkan capthca">
+                            <button class="btn btn-outline-primary btn-sm" id="tombol-refresh-captcha"> refresh </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3"></div>
+            </div>
+        </div>
+        <div class="text-center">
             <button class="btn btn-primary btn-lg" id="simpan-hasil">Simpan</button>
         </div>
     </div>
@@ -57,13 +72,24 @@
         </div>
     </div>
     <div class="position-absolute bottom-0 end-0 p-3">
-        <div id="toastGagal" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="toastNamaEmail" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <strong class="me-auto">Maaf, gagal</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
             <div class="toast-body">
-                Sedang terjadi kendala jaringan, coba lagi nanti !
+                Nama dan Email harus diisi !
+            </div>
+        </div>
+    </div>
+    <div class="position-absolute bottom-0 end-0 p-3">
+        <div id="toastCaptchaValid" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Maaf, gagal</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Captcha Salah, silahkan ulangi lagi  / refresh captcha !
             </div>
         </div>
     </div>
@@ -71,19 +97,43 @@
     @vite(['node_modules/bootstrap/dist/js/bootstrap.min.js'])
      <script type="text/javascript">
    
-        const url = window.location.href
-        const btnSimpan = document.querySelector('#simpan-hasil')
-        const notifikasi = document.querySelector('#notifikasi')
+        const url           = window.location.href
+        const urlCaptcha    = window.location.origin+'/get-captcha'
+        const btnSimpan     = document.querySelector('#simpan-hasil')
+        const btnRefresh    = document.querySelector('#tombol-refresh-captcha')
+
+        let image           = null
+
+        document.onreadystatechange = () => {
+            if (document.readyState === "complete") {
+                getCaptcha(urlCaptcha)
+            }
+        }
+
 
         btnSimpan.addEventListener('click', ()=>{
-            sendAjax(url, { 
-                kebersihan  : document.querySelector('#kebersihan').value,
-                variasi_menu: document.querySelector('#variasi-menu').value,
-                promo       : document.querySelector('#promo').value,
-                kecepatan   : document.querySelector('#kecepatan').value,
-                nama        : document.querySelector('#nama').value,
-                email       : document.querySelector('#email').value
-		    })
+            if(document.querySelector('#nama').value == '' || document.querySelector('#email').value == ''){
+                const toastNamaEmail = document.getElementById('toastNamaEmail')
+                const toastNE = new bootstrap.Toast(toastNamaEmail)
+                toastNE.show()
+            }
+            if(document.querySelector('#nama').value !== '' && document.querySelector('#email').value !== ''){
+                sendAjax(url, { 
+                    kebersihan  : document.querySelector('#kebersihan').value,
+                    variasi_menu: document.querySelector('#variasi-menu').value,
+                    promo       : document.querySelector('#promo').value,
+                    kecepatan   : document.querySelector('#kecepatan').value,
+                    nama        : document.querySelector('#nama').value,
+                    email       : document.querySelector('#email').value,
+                    file_name   : image,
+                    captcha_value   : document.querySelector('#captcha').value
+                })
+            }
+        })
+
+        btnRefresh.addEventListener('click', ()=>{
+            document.querySelector('#image-captcha').remove()
+            getCaptcha(urlCaptcha)
         })
 
         async function sendAjax(url = '', data = {}) {
@@ -96,14 +146,12 @@
                 body: JSON.stringify(data)
             })
             .then(response => {
-                if (!response.ok) {
-                    resetForm()
-                    const toastLiveGagal = document.getElementById('toastGagal')
-                    
-                    const toastGagal = new bootstrap.Toast(toastLiveGagal)
-                    toastGagal.show()
-                    throw new Error('Sedang terjadi kendala jaringan, coba lagi nanti !')
-                    
+                return response.json()
+            }).then( res => {
+                if(res.captcha_valid == 'False'){
+                    const toastCaptcha = document.getElementById('toastCaptchaValid')
+                    const toastCP = new bootstrap.Toast(toastCaptcha)
+                    toastCP.show()
                 }else{
                     resetForm()
                     const toastLiveBerhasil = document.getElementById('toastBerhasil')
@@ -124,9 +172,6 @@
             toastBerhasil.addEventListener('hidden.bs.toast', () => {
                 btnSimpan.disabled = false
             })
-            toastGagal.addEventListener('hidden.bs.toast', () => {
-                btnSimpan.disabled = false
-            })
 
             document.querySelector('#kebersihan').value     = null
             document.querySelector('#variasi-menu').value   = null
@@ -135,6 +180,25 @@
             document.querySelector('#nama').value           = null
             document.querySelector('#email').value          = null
             // return response
+        }
+
+        async function getCaptcha(url = '') {
+            const response = await fetch(url, {
+                method  : 'GET'
+            })
+            .then(response => {
+                return response.json()
+            })
+            // .then(response => response.json())
+            .then(res => {
+                image = res.data
+
+                let child = document.createElement("img")
+                child.setAttribute("src", `{{asset('storage/captcha/${image}')}}`)
+                child.setAttribute("id", "image-captcha")
+                child.setAttribute("class", "card-img-top")
+                document.querySelector('#captcha-container').prepend(child)
+            })
         }
     </script>
 </body>
