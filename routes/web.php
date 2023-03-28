@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Survey\SurveyController;
+use App\Http\Controllers\Captcha\CaptchaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,9 +28,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
+    
     Route::get('/survey', [SurveyController::class, 'index']);
     Route::post('/survey', [SurveyController::class, 'store']);
+    
+    Route::get('/get-captcha', [CaptchaController::class, 'show']);
 });
 
 require __DIR__.'/auth.php';
