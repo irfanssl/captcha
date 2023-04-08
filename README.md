@@ -17,6 +17,7 @@
         <li>run npm run build</li>
         <li>run hp artisan migrate --path=database/migrations/survey</li>
         <li>run php artisan serve</li>
+        <li>upss kelupaan, library gregwar/captcha membutuhkan gd extension, silakan dinyalakan dulu di php.ini, cari extension=gd hilangkan ; lalu save</li>
     </ul>
 
 <p align="center">Selamat Mencoba !!!</p>
