@@ -1,12 +1,23 @@
 {
+  "resources/css/survey.css": {
+    "file": "assets/survey-429390ee.css",
+    "isEntry": true,
+    "src": "resources/css/survey.css"
+  },
+  "resources/js/app.css": {
+    "file": "assets/app-5005f49e.css",
+    "src": "resources/js/app.css"
+  },
   "resources/js/app.js": {
-    "file": "assets/app-815b478a.js",
+    "css": [
+      "assets/app-5005f49e.css"
+    ],
+    "file": "assets/app-e36afd8f.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
   "resources/sass/app.scss": {
     "file": "assets/app-5005f49e.css",
-    "isEntry": true,
-    "src": "resources/sass/app.scss"
+    "src": "resources/js/app.css"
   }
 }

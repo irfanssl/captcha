@@ -94,7 +94,6 @@
         </div>
     </div>
     
-    @vite(['node_modules/bootstrap/dist/js/bootstrap.min.js'])
      <script type="text/javascript">
    
         const url           = window.location.href
